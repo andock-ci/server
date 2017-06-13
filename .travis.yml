@@ -25,7 +25,7 @@ install:
   # Install Ansible.
   - if [ "$ANSIBLE_VERSION" = "latest" ]; then pip install ansible; else pip install ansible==$ANSIBLE_VERSION; fi
   - if [ "$ANSIBLE_VERSION" = "latest" ]; then pip install ansible-lint; fi
-  - curl -fsSL https://raw.githubusercontent.com/andock-ci/server/master/install-server | sh
+
 
 script:
   # Check the role/playbook's syntax.
@@ -33,7 +33,7 @@ script:
 
   # Run the role/playbook with ansible-playbook.
 
-
+  - curl -fsSL https://raw.githubusercontent.com/andock-ci/server/master/install-server | sh
 
   # Run the role/playbook again, checking to make sure it's idempotent.
   # - >
