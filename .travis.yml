@@ -32,9 +32,11 @@ script:
 
 
   # Run the role/playbook with ansible-playbook.
-
+  - pwd
+  - ls
   - curl -fsSL https://raw.githubusercontent.com/andock-ci/server/master/install-server | sh
-
+  - acs version
+  - acs self-update
   # Run the role/playbook again, checking to make sure it's idempotent.
   # - >
   #  ansible-playbook -i tests/inventory tests/test.yml --connection=local
