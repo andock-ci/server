@@ -22,3 +22,10 @@
       regexp: '^export DOCKSAL_VHOST_PROXY_IP'
       line: 'export DOCKSAL_VHOST_PROXY_IP=0.0.0.0'
     become: true
+
+  - name: Add andock-ci to docker
+    user:
+      name: andock-ci
+      group: docker
+      shell: /bin/bash
+    become: true
