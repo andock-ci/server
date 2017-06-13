@@ -2,9 +2,6 @@
 sudo: required
 dist: trusty
 
-language: php
-php: "7.0"
-
 env:
   matrix:
   - ANSIBLE_VERSION=latest
@@ -37,6 +34,9 @@ script:
   - curl -fsSL https://raw.githubusercontent.com/andock-ci/server/master/install-server | sh
   - acs version
   - acs self-update
+  - cd ~
+  - pwd
+  - ls
   # Run the role/playbook again, checking to make sure it's idempotent.
   # - >
   #  ansible-playbook -i tests/inventory tests/test.yml --connection=local
