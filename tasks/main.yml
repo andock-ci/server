@@ -2,9 +2,13 @@
 - block:
 
   - name: Install docksal
-    include: "{{ role_path }}/tasks/install_docksal.yml"
+    include: "{{ role_path }}/tasks/install.yml"
     tags: ['install']
 
+  - name: Add key
+    include: "{{ role_path }}/tasks/ssh_add.yml"
+    tags: ['ssh_add']
+
   - name: Uninstall docksal
-    include: "{{ role_path }}/tasks/uninstall_docksal.yml"
+    include: "{{ role_path }}/tasks/uninstall.yml"
     tags: ['uninstall']

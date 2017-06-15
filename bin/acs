@@ -109,18 +109,31 @@ if_failed_error ()
   fi
 }
 
+#------------------------------ HELP --------------------------------
+show_help ()
+{
+    printh "Andock-ci Server command reference" "${ANDOCK_CIS_VERSION}" "green"
+
+	echo
+	printh "ssh-add" "Add public key to andock-ci user authorized_key file"
+    echo
+
+	echo
+	printh "version (v, -v)" "Print andock-ci version. [v, -v] - prints short version"
+	echo
+    printh "self-update" "${yellow}Update andock-ci${NC}" "yellow"
+}
 
 #------------------------------ SETUP --------------------------------
 
 # Ansible playbook wrapper to execute andock-ci.fin role
 install_server()
 {
-ansible-galaxy install andock-ci.server --force
+#ansible-galaxy install andock-ci.server --force
 shift
-ansible-playbook --tags install /dev/stdin <<END
+ansible-playbook --tags=install /dev/stdin <<END
 ---
 - hosts: localhost
-  gather_facts: no
   roles:
     - { role: andock-ci.server }
 
@@ -128,11 +141,32 @@ END
 
 }
 
+# Ansible playbook wrapper to add ssh key
+ssh_add()
+{
+local key=$1
+shift
+echo "Installing key.. $key"
+
+ansible-playbook --tags "ssh_add" --extra-vars="ssh_key='$key'" -vvv /dev/stdin <<END
+---
+- hosts: localhost
+  connection: local
+  any_errors_fatal: True
+  vars_prompt:
+    - name: "ssh_key"
+      prompt: "Public key?"
+  roles:
+    - { role: andock-ci.server }
+
+END
+
+}
 # Based on docksal update script
 # @author Leonid Makarov
 self_update()
 {
-  echo-green "Updating andock_ci..."
+  echo-green "Updating andock_ci server ..."
   local new_andock_ci
   new_andock_ci=$(curl -kfsSL "$URL_ANDOCK_CI?r=$RANDOM")
   if_failed_error "andock_ci download failed."
@@ -191,6 +225,11 @@ case "$1" in
     shift
     self_update "$@"
   ;;
+
+  ssh-add)
+    shift
+    ssh_add "$@"
+  ;;
   help|"")
 	shift
     show_help
@@ -203,7 +242,7 @@ case "$1" in
   ;;
 	*)
 		[ ! -f "$command_script" ] && \
-			echo-yellow "Unknown command '$*'. See 'acp help' for list of available commands" && \
+			echo-yellow "Unknown command '$*'. See 'acs help' for list of available commands" && \
 			exit 1
 		shift
 		exec "$command_script" "$@"
