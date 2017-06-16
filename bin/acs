@@ -125,7 +125,7 @@ show_help ()
 # Ansible playbook wrapper to execute andock-ci.fin role
 install_server()
 {
-ansible-playbook -K --connection=local /dev/stdin <<END
+sudo ansible-playbook --connection=local /dev/stdin <<END
 ---
 - hosts: localhost
   connection: local
@@ -172,7 +172,7 @@ local key=$1
 shift
 echo "Installing key.. $key"
 
-ansible-playbook -K --extra-vars="ssh_key='$key'" /dev/stdin <<END
+sudo ansible-playbook --extra-vars="ssh_key='$key'" /dev/stdin <<END
 ---
 - hosts: localhost
   connection: local
