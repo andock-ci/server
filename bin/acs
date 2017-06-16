@@ -10,10 +10,6 @@ ANDOCK_CI_PATH_UPDATED="/usr/local/bin/acs.updated"
 URL_REPO="https://raw.githubusercontent.com/andock-ci/server"
 URL_ANDOCK_CI="${URL_REPO}/master/bin/acs"
 
-
-export ANSIBLE_ROLES_PATH="~/.andock-ci/roles"
-export ANSIBLE_HOST_KEY_CHECKING=False
-
 # @author Leonid Makarov
 # Console colors
 red='\033[0;91m'
@@ -129,13 +125,41 @@ show_help ()
 # Ansible playbook wrapper to execute andock-ci.fin role
 install_server()
 {
-#ansible-galaxy install andock-ci.server --force
-shift
-ansible-playbook --tags=install /dev/stdin <<END
+ansible-playbook -K --connection=local /dev/stdin <<END
 ---
 - hosts: localhost
-  roles:
-    - { role: andock-ci.server }
+  connection: local
+  any_errors_fatal: True
+  gather_facts: false
+  tasks:
+  - name: fin install
+    shell: "curl -fsSL get.docksal.io | sh"
+    become: true
+    args:
+      creates: "/usr/local/bin/fin"
+    environment:
+      DOCKSAL_VHOST_PROXY_IP: "0.0.0.0"
+
+  - name: Add andock-ci to docker
+    user:
+      name: andock-ci
+      group: docker
+      shell: /bin/bash
+    become: true
+
+  - name: Set DOCKSAL_VHOST_PROXY_IP export to /etc/profile
+    lineinfile:
+      path: /etc/profile
+      regexp: '^export DOCKSAL_VHOST_PROXY_IP'
+      line: 'export DOCKSAL_VHOST_PROXY_IP=0.0.0.0'
+    become: true
+
+  - name: Add andock-ci to docker
+    user:
+      name: andock-ci
+      group: docker
+      shell: /bin/bash
+    become: true
 
 END
 
@@ -148,16 +172,29 @@ local key=$1
 shift
 echo "Installing key.. $key"
 
-ansible-playbook --tags "ssh_add" --extra-vars="ssh_key='$key'" -vvv /dev/stdin <<END
+ansible-playbook -K --extra-vars="ssh_key='$key'" /dev/stdin <<END
 ---
 - hosts: localhost
   connection: local
   any_errors_fatal: True
-  vars_prompt:
-    - name: "ssh_key"
-      prompt: "Public key?"
-  roles:
-    - { role: andock-ci.server }
+  gather_facts: false
+
+  tasks:
+  - block:
+    - name: Create .ssh folder
+      file:
+        path: /home/andock-ci/.ssh
+        state: directory
+        owner: andock-ci
+        group: docker
+      become: true
+
+    - name: Set authorized key defining key options
+      authorized_key:
+        user: andock-ci
+        state: present
+        key: "{{ ssh_key }}"
+      become: true
 
 END
 
@@ -206,8 +243,6 @@ version ()
 		echo "$ANDOCK_CI_VERSION"
 	else
 		echo "andock-ci server (acs) version: $ANDOCK_CIS_VERSION"
-		echo "Roles:"
-		echo "andock-ci.server: $REQUIREMENTS_ANDOCK_CI_SERVER"
 	fi
 
 }
