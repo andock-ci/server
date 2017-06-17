@@ -20,8 +20,6 @@ before_install:
 
 install:
   # Install Ansible.
-  - if [ "$ANSIBLE_VERSION" = "latest" ]; then sudo pip install ansible; else sudo pip install ansible==$ANSIBLE_VERSION; fi
-  - if [ "$ANSIBLE_VERSION" = "latest" ]; then sudo pip install ansible-lint; fi
   - sudo apt install openssh-server
 
 script:

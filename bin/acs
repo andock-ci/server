@@ -125,6 +125,10 @@ show_help ()
 # Ansible playbook wrapper to execute andock-ci.fin role
 install_server()
 {
+sudo apt install python-pip
+pip install ansible
+echo-green "Install andock_ci server ..."
+
 sudo ansible-playbook --connection=local /dev/stdin <<END
 ---
 - hosts: localhost
@@ -145,6 +149,8 @@ sudo ansible-playbook --connection=local /dev/stdin <<END
       name: andock-ci
       group: docker
       shell: /bin/bash
+      generate_ssh_key: yes
+      ssh_key_bits: 4096
     become: true
 
   - name: Set DOCKSAL_VHOST_PROXY_IP export to /etc/profile
@@ -162,7 +168,9 @@ sudo ansible-playbook --connection=local /dev/stdin <<END
     become: true
 
 END
-
+echo-green "andock_ci server installed sucessfully..."
+echo-green "Please copy and paste the following ssh key to your git user. Andock-ci will use it to checkout your target git repository.."
+sudo cat /home/andock-ci/.ssh/id_rsa.pub
 }
 
 # Ansible playbook wrapper to add ssh key
