@@ -136,22 +136,33 @@ ansible-playbook --connection=local /dev/stdin <<END
   any_errors_fatal: True
   gather_facts: false
   tasks:
-  - name: fin install
-    shell: "curl -fsSL get.docksal.io | sh"
-    become: true
-    args:
-      creates: "/usr/local/bin/fin"
-    environment:
-      DOCKSAL_VHOST_PROXY_IP: "0.0.0.0"
-
-  - name: Add andock-ci to docker
+  - name: Create andock-ci user
     user:
       name: andock-ci
       group: docker
       shell: /bin/bash
       generate_ssh_key: yes
       ssh_key_bits: 4096
+      force: true
     become: true
+    become_method: "sudo"
+    become_user: andock-ci
+
+  - name: Install docksal
+    shell: "curl -fsSL get.docksal.io | sh"
+    become: true
+    become_user: andock-ci
+    args:
+      creates: "/usr/local/bin/fin"
+    environment:
+      DOCKSAL_VHOST_PROXY_IP: "0.0.0.0"
+
+  - name: Run fin update
+    shell: "fin update"
+    become: true
+    become_user: andock-ci
+    environment:
+      DOCKSAL_VHOST_PROXY_IP: "0.0.0.0"
 
   - name: Set DOCKSAL_VHOST_PROXY_IP export to /etc/profile
     lineinfile:
@@ -160,17 +171,11 @@ ansible-playbook --connection=local /dev/stdin <<END
       line: 'export DOCKSAL_VHOST_PROXY_IP=0.0.0.0'
     become: true
 
-  - name: Add andock-ci to docker
-    user:
-      name: andock-ci
-      group: docker
-      shell: /bin/bash
-    become: true
 
 END
 echo-green "andock_ci server installed sucessfully..."
 echo-green "Please copy and paste the following ssh key to your git user. Andock-ci will use it to checkout your target git repository.."
-sudo cat /home/andock-ci/.ssh/id_rsa.pub
+  sudo cat /home/andock-ci/.ssh/id_rsa.pub
 }
 
 # Ansible playbook wrapper to add ssh key
@@ -178,7 +183,7 @@ ssh_add()
 {
 local key=$1
 shift
-echo "Installing key.. $key"
+sudo echo "Installing key.. $key"
 
 ansible-playbook --extra-vars="ssh_key='$key'" /dev/stdin <<END
 ---
@@ -196,6 +201,7 @@ ansible-playbook --extra-vars="ssh_key='$key'" /dev/stdin <<END
         owner: andock-ci
         group: docker
       become: true
+
 
     - name: Set authorized key defining key options
       authorized_key:
