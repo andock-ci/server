@@ -20,6 +20,14 @@ yellow='\033[1;33m'
 NC='\033[0m'
 
 #------------------------------ Help functions --------------------------------
+# Ask dialog with an optional message
+# @param $1 confirmation message
+_ask ()
+{
+	# Skip checks if not running interactively (not a tty or not on Windows)
+	read -p "$1 : " answer
+	echo $answer
+}
 
 # Yes/no confirmation dialog with an optional message
 # @param $1 confirmation message
@@ -125,11 +133,25 @@ show_help ()
 # Ansible playbook wrapper to execute andock-ci.fin role
 install_server()
 {
-sudo apt install python-pip
-pip install ansible
-echo-green "Install andock_ci server ..."
+  echo-green "Install andock_ci server ..."
+  sudo apt install whois
+  if [ "$1" = "" ]; then
+    if [ "${TRAVIS}" = "true" ]; then
+      local pw="andock-ci"
+    else
+      echo-green "Add andock_ci user ..."
+      local pw=$(mkpasswd)
+    fi
 
-ansible-playbook --connection=local /dev/stdin <<END
+  else
+    local pw=$1
+    shift
+  fi
+  sudo apt install python-pip
+  pip install ansible
+
+
+  ansible-playbook --connection=local /dev/stdin <<END
 ---
 - hosts: localhost
   connection: local
@@ -142,10 +164,10 @@ ansible-playbook --connection=local /dev/stdin <<END
       group: docker
       shell: /bin/bash
       generate_ssh_key: yes
+      groups: "sudo"
       ssh_key_bits: 4096
-      force: true
+      password: $pw
     become: true
-    become_method: "sudo"
 
   - name: Install docksal
     shell: "curl -fsSL get.docksal.io | sh"
