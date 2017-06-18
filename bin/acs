@@ -146,7 +146,6 @@ ansible-playbook --connection=local /dev/stdin <<END
       force: true
     become: true
     become_method: "sudo"
-    become_user: andock-ci
 
   - name: Install docksal
     shell: "curl -fsSL get.docksal.io | sh"
