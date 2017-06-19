@@ -175,6 +175,7 @@ install_server()
       state: present
       regexp: '^%sudo'
       line: '%sudo   ALL=(ALL:ALL) ALL'
+    become: true
 
   - name: Install docksal
     shell: "curl -fsSL get.docksal.io | sh"
