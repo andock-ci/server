@@ -202,6 +202,13 @@ install_server()
 
 
 END
+
+sudo -u andock-ci  echo "
+#!/usr/bin/env bash
+eval `ssh-agent -s`
+ssh-add /home/andock-ci/.ssh/id_rsa
+" > /home/andock-ci/.bash_profile
+
 echo-green "andock_ci server installed sucessfully..."
 echo-green "Please copy and paste the following ssh key to your git user. Andock-ci will use it to checkout your target git repository.."
   sudo cat /home/andock-ci/.ssh/id_rsa.pub
