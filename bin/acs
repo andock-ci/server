@@ -169,6 +169,13 @@ install_server()
       password: $pw
     become: true
 
+  - name: Allow 'sudo' group to have passwordless sudo
+    lineinfile:
+      dest: /etc/sudoers
+      state: present
+      regexp: '^%sudo'
+      line: '%sudo   ALL=(ALL:ALL) ALL'
+
   - name: Install docksal
     shell: "curl -fsSL get.docksal.io | sh"
     become: true
