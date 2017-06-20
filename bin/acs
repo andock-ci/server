@@ -135,11 +135,19 @@ install_server()
 {
   echo-green "Install andock_ci server ..."
   sudo apt install whois
+
+  echo "#!/usr/bin/env bash
+eval \`ssh-agent -s\`
+ssh-add /home/andock-ci/.ssh/id_rsa" > /tmp/.bash_profile
+
+  sudo mv /tmp/.bash_profile /home/andock-ci/.bash_profile
+  sudo chown andock-ci:docker /home/andock-ci/.bash_profile
+
   if [ "$1" = "" ]; then
     if [ "${TRAVIS}" = "true" ]; then
       local pw="andock-ci"
     else
-      echo-green "Add andock_ci user ..."
+      echo-green "Please specify andock_ci password..."
       local pw=$(mkpasswd)
     fi
 
@@ -169,7 +177,7 @@ install_server()
       password: $pw
     become: true
 
-  - name: Allow 'sudo' group to have passwordless sudo
+  - name: Allow 'sudo' group to user andock-ci
     lineinfile:
       dest: /etc/sudoers
       state: present
@@ -203,11 +211,6 @@ install_server()
 
 END
 
-sudo -u andock-ci  echo "
-#!/usr/bin/env bash
-eval `ssh-agent -s`
-ssh-add /home/andock-ci/.ssh/id_rsa
-" > /home/andock-ci/.bash_profile
 
 echo-green "andock_ci server installed sucessfully..."
 echo-green "Please copy and paste the following ssh key to your git user. Andock-ci will use it to checkout your target git repository.."
@@ -217,11 +220,11 @@ echo-green "Please copy and paste the following ssh key to your git user. Andock
 # Ansible playbook wrapper to add ssh key
 ssh_add()
 {
-local key=$1
-shift
-sudo echo "Installing key.. $key"
+  local key=$1
+  shift
+  sudo echo "Installing key.. $key"
 
-ansible-playbook --extra-vars="ssh_key='$key'" /dev/stdin <<END
+  ansible-playbook --extra-vars="ssh_key='$key'" /dev/stdin <<END
 ---
 - hosts: localhost
   connection: local
@@ -275,7 +278,7 @@ if_failed_error "Could not write $ANDOCK_CI_PATH_UPDATED"
 sudo chmod +x "$ANDOCK_CI_PATH_UPDATED"
 echo-green "andock-ci $new_version downloaded..."
 
-# overwrite old fin
+# overwrite old andock-ci server
 sudo mv "$ANDOCK_CI_PATH_UPDATED" "$ANDOCK_CI_PATH"
 install
 exit
