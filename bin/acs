@@ -134,6 +134,8 @@ show_help ()
 install_server()
 {
   echo-green "Install andock_ci server ..."
+  sudo apt update
+  sudo apt install sudo
   sudo apt install whois
 
   echo "#!/usr/bin/env bash
