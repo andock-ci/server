@@ -140,7 +140,8 @@ install_server()
   fi
 
   sudo apt update
-  sudo apt install whois
+  sudo apt install whois -y
+  sudo apt install build-essential libssl-dev libffi-dev python-dev -y
 
   if [ "$1" = "" ]; then
     if [ "${TRAVIS}" = "true" ]; then
@@ -167,6 +168,14 @@ install_server()
   any_errors_fatal: True
   gather_facts: false
   tasks:
+  - name: Install docksal
+    shell: "curl -fsSL get.docksal.io | sh"
+    become: true
+    args:
+      creates: "/usr/local/bin/fin"
+    environment:
+      DOCKSAL_VHOST_PROXY_IP: "0.0.0.0"
+
   - name: Create andock-ci user
     user:
       name: andock-ci
@@ -185,15 +194,6 @@ install_server()
       regexp: '^%sudo'
       line: '%sudo   ALL=(ALL:ALL) ALL'
     become: true
-
-  - name: Install docksal
-    shell: "curl -fsSL get.docksal.io | sh"
-    become: true
-    become_user: andock-ci
-    args:
-      creates: "/usr/local/bin/fin"
-    environment:
-      DOCKSAL_VHOST_PROXY_IP: "0.0.0.0"
 
   - name: Run fin update
     shell: "fin update"
