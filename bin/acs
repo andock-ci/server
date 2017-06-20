@@ -134,16 +134,13 @@ show_help ()
 install_server()
 {
   echo-green "Install andock_ci server ..."
+  if [ $(dpkg-query -W -f='${Status}' sudo 2>/dev/null | grep -c "ok installed") -eq 0 ];
+  then
+    apt install sudo;
+  fi
+
   sudo apt update
-  sudo apt install sudo
   sudo apt install whois
-
-  echo "#!/usr/bin/env bash
-eval \`ssh-agent -s\`
-ssh-add /home/andock-ci/.ssh/id_rsa" > /tmp/.bash_profile
-
-  sudo mv /tmp/.bash_profile /home/andock-ci/.bash_profile
-  sudo chown andock-ci:docker /home/andock-ci/.bash_profile
 
   if [ "$1" = "" ]; then
     if [ "${TRAVIS}" = "true" ]; then
@@ -157,7 +154,9 @@ ssh-add /home/andock-ci/.ssh/id_rsa" > /tmp/.bash_profile
     local pw=$1
     shift
   fi
-  sudo apt install python-pip
+  set -e
+  wget https://bootstrap.pypa.io/get-pip.py
+  sudo python get-pip.py
   pip install ansible
 
 
@@ -214,7 +213,7 @@ ssh-add /home/andock-ci/.ssh/id_rsa" > /tmp/.bash_profile
 END
 
 
-echo-green "andock_ci server installed sucessfully..."
+echo-green "ANDOCK-CI SERVER SUCCESSFULLY INSTALLED ..."
 echo-green "Please copy and paste the following ssh key to your git user. Andock-ci will use it to checkout your target git repository.."
   sudo cat /home/andock-ci/.ssh/id_rsa.pub
 }
