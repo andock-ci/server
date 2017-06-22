@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ANDOCK_CIS_VERSION=0.0.1
+ANDOCK_CIS_VERSION=0.0.2
 
 REQUIREMENTS_ANDOCK_CI_SERVER='0.0.1'
 
@@ -143,11 +143,16 @@ install_server()
   sudo apt install whois -y
   sudo apt install build-essential libssl-dev libffi-dev python-dev -y
 
+  set -e
+  wget https://bootstrap.pypa.io/get-pip.py
+  sudo python get-pip.py
+  pip install ansible
+
   if [ "$1" = "" ]; then
     if [ "${TRAVIS}" = "true" ]; then
       local pw="andock-ci"
     else
-      echo-green "Please specify andock_ci password..."
+      echo-green "Please enter andock_ci password..."
       local pw=$(mkpasswd)
     fi
 
@@ -155,11 +160,6 @@ install_server()
     local pw=$1
     shift
   fi
-  set -e
-  wget https://bootstrap.pypa.io/get-pip.py
-  sudo python get-pip.py
-  pip install ansible
-
 
   ansible-playbook --connection=local /dev/stdin <<END
 ---
@@ -213,7 +213,7 @@ install_server()
 END
 
 
-echo-green "ANDOCK-CI SERVER SUCCESSFULLY INSTALLED ..."
+echo-green "ANDOCK-CI SERVER WAS INSTALLED SUCCESSFULLY..."
 echo-green "Please copy and paste the following ssh key to your git user. Andock-ci will use it to checkout your target git repository.."
   sudo cat /home/andock-ci/.ssh/id_rsa.pub
 }
@@ -247,7 +247,7 @@ ssh_add()
       authorized_key:
         user: andock-ci
         state: present
-        key: "{{ ssh_key }}"
+        key: "command=\"acs _bridge\" {{ ssh_key }}"
       become: true
 
 END
@@ -301,12 +301,25 @@ version ()
 
 }
 
+_bridge ()
+{
+  if [ "${LC_ANDOCK_CI_ENV}" != "" ]; then
+    fin @${LC_ANDOCK_CI_ENV} exec -ti $SSH_ORIGINAL_COMMAND
+  else
+    /bin/bash -c "$SSH_ORIGINAL_COMMAND"
+  fi
+
+}
 #----------------------------------- MAIN -------------------------------------
 
 case "$1" in
   _install-server)
     shift
     install_server
+  ;;
+  _bridge)
+    shift
+    _bridge
   ;;
 
   self-update)
@@ -336,4 +349,3 @@ case "$1" in
 		shift
 		exec "$command_script" "$@"
 esac
-
