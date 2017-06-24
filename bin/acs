@@ -247,7 +247,7 @@ ssh_add()
       authorized_key:
         user: andock-ci
         state: present
-        key: "command=\"acs _bridge\" {{ ssh_key }}"
+        key: "command=\"acs _bridge $SSH_ORIGINAL_COMMAND\" {{ ssh_key }}"
       become: true
 
 END
@@ -303,12 +303,14 @@ version ()
 
 _bridge ()
 {
-  if [ "${LC_ANDOCK_CI_ENV}" != "" ]; then
-    fin @${LC_ANDOCK_CI_ENV} exec -ti $SSH_ORIGINAL_COMMAND
-  else
-    /bin/bash -c "$SSH_ORIGINAL_COMMAND"
+  if [ "$1" = "env" ]; then
+    export $2;
   fi
-
+  if [ "${ANDOCK_CI_ENV}" != "" ]; then
+    fin @${ANDOCK_CI_ENV} exec -ti $@
+  else
+    /bin/bash -c "$@"
+  fi
 }
 #----------------------------------- MAIN -------------------------------------
 
@@ -319,7 +321,7 @@ case "$1" in
   ;;
   _bridge)
     shift
-    _bridge
+    _bridge "$@"
   ;;
 
   self-update)

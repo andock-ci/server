@@ -1,14 +1,10 @@
-andock-ci.fin (fin docksal livecycle. )
+andock-ci server 
 =========
 
-**andock-ci.server** Installs and configured docksal to use it with andock-ci pipeline:
+**andock-ci.server** Installs and configured docksal to use for andock-ci pipeline:
 
 Requirements
 ------------
-
-In order to build your apps with Andock CI, you will need:
-
-* Ansible
 
 Installation 
 
@@ -20,21 +16,12 @@ Installation
 Update
 ------
 
-If you want to update the role, you need to pass **--force** parameter when installing. Please, check the following command:
+If you want to update acs server run:
 
 ```
-$ ansible-galaxy install --force andock-ci.server
+$ acs self-update
 ```
 
-Dependencies
-------------
-
-@TODO
-
-Example Playbook
-----------------
-
-@TODO
 
 License
 -------
