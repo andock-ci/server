@@ -196,7 +196,6 @@ install_server()
     shell: "sudo su andock-ci fin update"
     environment:
       DOCKSAL_VHOST_PROXY_IP: "0.0.0.0"
-      HOME: /home/andock-ci
     become: true
 
   - name: Set DOCKSAL_VHOST_PROXY_IP export to /etc/profile
