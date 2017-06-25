@@ -134,10 +134,7 @@ show_help ()
 install_server()
 {
   echo-green "Install andock_ci server ..."
-  if [ $(dpkg-query -W -f='${Status}' sudo 2>/dev/null | grep -c "ok installed") -eq 0 ];
-  then
-    apt install sudo;
-  fi
+  apt install sudo;
 
   sudo apt update
   sudo apt install whois -y
