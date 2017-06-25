@@ -196,10 +196,12 @@ install_server()
     become: true
 
   - name: Run fin update
-    shell: "sudo -u andock-ci \"export HOME=/home/andock-ci; fin update\""
+    shell: "HOME=/home/andock-ci;sudo su andock-ci fin update
     environment:
       DOCKSAL_VHOST_PROXY_IP: "0.0.0.0"
       HOME: /home/andock-ci
+    become: true
+    become_user: andock-ci
 
   - name: Set DOCKSAL_VHOST_PROXY_IP export to /etc/profile
     lineinfile:
@@ -280,7 +282,7 @@ echo-green "andock-ci $new_version downloaded..."
 
 # overwrite old andock-ci server
 sudo mv "$ANDOCK_CI_PATH_UPDATED" "$ANDOCK_CI_PATH"
-install
+install_server
 exit
 else
 echo-rewrite "Updating andock-ci... $ANDOCK_CI_VERSION ${green}[OK]${NC}"
