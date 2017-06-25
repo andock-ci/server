@@ -213,7 +213,6 @@ install_server()
 
 END
 
-sudo -u andock-ci fin update
 echo-green "ANDOCK-CI SERVER WAS INSTALLED SUCCESSFULLY..."
 echo-green "Please copy and paste the following ssh key to your git user. Andock-ci will use it to checkout your target git repository.."
   sudo cat /home/andock-ci/.ssh/id_rsa.pub
