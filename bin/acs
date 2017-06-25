@@ -201,7 +201,6 @@ install_server()
       DOCKSAL_VHOST_PROXY_IP: "0.0.0.0"
       HOME: /home/andock-ci
     become: true
-    become_user: andock-ci
 
   - name: Set DOCKSAL_VHOST_PROXY_IP export to /etc/profile
     lineinfile:
