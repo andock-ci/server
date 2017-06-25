@@ -3,10 +3,8 @@ andock-ci server
 
 **andock-ci.server** Installs and configured docksal to use for andock-ci pipeline:
 
-Requirements
+Installation
 ------------
-
-Installation 
 
 ```
     curl -fsSL https://raw.githubusercontent.com/andock-ci/server/master/install-server | sh
