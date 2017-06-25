@@ -196,7 +196,7 @@ install_server()
     become: true
 
   - name: Run fin update
-    shell: "HOME=/home/andock-ci;sudo su andock-ci fin update
+    shell: "HOME=/home/andock-ci;sudo su andock-ci fin update"
     environment:
       DOCKSAL_VHOST_PROXY_IP: "0.0.0.0"
       HOME: /home/andock-ci
