@@ -133,7 +133,7 @@ show_help ()
 # Ansible playbook wrapper to execute andock-ci.fin role
 install_server()
 {
-  echo-green "Install andock_ci server ..."
+  echo-green "Installing andock-ci server ..."
   apt install sudo;
 
   sudo apt update
