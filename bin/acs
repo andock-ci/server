@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ANDOCK_CIS_VERSION=0.0.3
+ANDOCK_CIS_VERSION=0.0.4
 
 REQUIREMENTS_ANDOCK_CI_SERVER='0.0.1'
 
@@ -242,7 +242,7 @@ ssh_add()
       authorized_key:
         user: andock-ci
         state: present
-        key: "command=\"acs _bridge $SSH_ORIGINAL_COMMAND\" {{ ssh_key }}"
+        key: "command=\"acs _bridge \$SSH_ORIGINAL_COMMAND\" {{ ssh_key }}"
       become: true
 
 END
