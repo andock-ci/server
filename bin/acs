@@ -298,14 +298,20 @@ version ()
 
 _bridge ()
 {
+
+  local args=$@
+
   if [ "$1" = "env" ]; then
     export $2;
   fi
   if [ "${ANDOCK_CI_ENV}" != "" ]; then
     fin @${ANDOCK_CI_ENV} exec -ti $@
-  else
+  elif [ "$args" != "" ]; then
     /bin/bash -c "$@"
+  else
+    /bin/bash
   fi
+
 }
 #----------------------------------- MAIN -------------------------------------
 
