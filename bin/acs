@@ -307,7 +307,7 @@ _bridge ()
   if [ "${ANDOCK_CI_ENV}" != "" ]; then
     fin @${ANDOCK_CI_ENV} exec -ti $@
   elif [ "$args" != "" ]; then
-    /bin/bash -c "$@"
+    eval "$SSH_ORIGINAL_COMMAND"
   else
     /bin/bash
   fi
