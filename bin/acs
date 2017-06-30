@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ANDOCK_CIS_VERSION=0.0.5
+ANDOCK_CI_VERSION=0.0.5
 
 REQUIREMENTS_ANDOCK_CI_SERVER='0.0.1'
 
@@ -257,14 +257,13 @@ self_update()
   new_andock_ci=$(curl -kfsSL "$URL_ANDOCK_CI?r=$RANDOM")
   if_failed_error "andock_ci download failed."
 
-# Check if fin update is required and whether it is a major version
   local new_version=$(echo "$new_andock_ci" | grep "^ANDOCK_CI_VERSION=" | cut -f 2 -d "=")
-  if [[ "$new_version" != "$ANDOCK_CI_VERSION" ]]; then
-  local current_major_version=$(echo "$ANDOCK_CI_VERSION" | cut -d "." -f 1)
+  if [[ "$new_version" != "$ANDOCK_CIS_VERSION" ]]; then
+  local current_major_version=$(echo "$ANDOCK_CIS_VERSION" | cut -d "." -f 1)
   local new_major_version=$(echo "$new_version" | cut -d "." -f 1)
   if [[ "$current_major_version" != "$new_major_version" ]]; then
     echo -e "${red_bg} WARNING ${NC} ${red}Non-backwards compatible version update${NC}"
-    echo -e "Updating from ${yellow}$ANDOCK_CI_VERSION${NC} to ${yellow}$new_version${NC} is not backward compatible."
+    echo -e "Updating from ${yellow}$ANDOCK_CIS_VERSION${NC} to ${yellow}$new_version${NC} is not backward compatible."
     _confirm "Continue with the update?"
   fi
 
@@ -279,7 +278,7 @@ sudo mv "$ANDOCK_CI_PATH_UPDATED" "$ANDOCK_CI_PATH"
 install_server
 exit
 else
-echo-rewrite "Updating andock-ci... $ANDOCK_CI_VERSION ${green}[OK]${NC}"
+echo-rewrite "Updating andock-ci... $ANDOCK_CIS_VERSION ${green}[OK]${NC}"
 fi
 }
 
@@ -289,7 +288,7 @@ fi
 version ()
 {
 	if [[ $1 == '--short' ]]; then
-		echo "$ANDOCK_CI_VERSION"
+		echo "$ANDOCK_CIS_VERSION"
 	else
 		echo "andock-ci server (acs) version: $ANDOCK_CIS_VERSION"
 	fi
