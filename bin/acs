@@ -204,8 +204,13 @@ install_server()
 # Ansible playbook wrapper to add ssh key
 ssh_add()
 {
-  local key=$1
-  shift
+  if [ "$1" = "" ]; then
+    local key=$(_ask "Please enter your ssh public key.")
+  else
+    local key=$1
+    shift
+  fi
+
   sudo echo "Installing key.. $key"
 
   ansible-playbook --extra-vars="ssh_key='$key'" /dev/stdin <<END
