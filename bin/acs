@@ -161,12 +161,20 @@ update_server()
       DOCKSAL_VHOST_PROXY_IP: \"0.0.0.0\"
     become: true
 
-  - name: Set DOCKSAL_VHOST_PROXY_IP export to /etc/profile
+  - name: Add DOCKSAL_VHOST_PROXY_IP export to /etc/profile
     lineinfile:
       path: /etc/profile
       regexp: '^export DOCKSAL_VHOST_PROXY_IP'
       line: 'export DOCKSAL_VHOST_PROXY_IP=0.0.0.0'
     become: true
+
+  - name: Add DOCKSAL_VHOST_PROXY_IP export to /home/andock-ci/.bashrc
+    lineinfile:
+      path: /home/andock-ci/.bashrc
+      regexp: '^export DOCKSAL_VHOST_PROXY_IP'
+      line: 'export DOCKSAL_VHOST_PROXY_IP=0.0.0.0'
+    become: true
+
 " > ~/.andock-ci/install.yml
 
   ansible-playbook --connection=local ~/.andock-ci/install.yml -e="pw=$pw" -vvv
