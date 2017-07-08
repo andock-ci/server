@@ -120,34 +120,8 @@ show_help ()
 
 #------------------------------ SETUP --------------------------------
 
-# Ansible playbook wrapper to execute andock-ci.fin role
-install_server()
+update_server()
 {
-  echo-green "Installing andock-ci server ..."
-
-  sudo apt update
-  sudo apt install whois -y
-  sudo apt install build-essential libssl-dev libffi-dev python-dev -y
-
-  set -e
-  wget https://bootstrap.pypa.io/get-pip.py
-  sudo python get-pip.py
-  pip install ansible
-  rm get-pip.py
-
-  if [ "$1" = "" ]; then
-    if [ "${TRAVIS}" = "true" ]; then
-      local pw="andock-ci"
-    else
-      echo-green "Please enter andock_ci password..."
-      local pw=$(mkpasswd)
-    fi
-
-  else
-    local pw=$1
-    shift
-  fi
-  mkdir -p ~/.andock-ci
   echo "---
 - hosts: localhost
   connection: local
@@ -197,6 +171,37 @@ install_server()
 
   ansible-playbook --connection=local ~/.andock-ci/install.yml -e="pw=$pw" -vvv
 
+}
+# Ansible playbook wrapper to execute andock-ci.fin role
+install_server()
+{
+  echo-green "Installing andock-ci server ..."
+
+  sudo apt-get update
+  sudo apt-get install whois -y
+  sudo apt-get install build-essential libssl-dev libffi-dev python-dev -y
+
+  set -e
+  wget https://bootstrap.pypa.io/get-pip.py
+  sudo python get-pip.py
+  pip install ansible
+  rm get-pip.py
+
+  if [ "$1" = "" ]; then
+    if [ "${TRAVIS}" = "true" ]; then
+      local pw="andock-ci"
+    else
+      echo-green "Please enter andock_ci password..."
+      local pw=$(mkpasswd)
+    fi
+
+  else
+    local pw=$1
+    shift
+  fi
+  mkdir -p ~/.andock-ci
+
+  update_server
   echo-green "andock-ci server was installed successfully..."
   echo-green "Please copy and paste the following ssh key to your git user. Andock-ci will use it to checkout your target git repository.."
   sudo cat /home/andock-ci/.ssh/id_rsa.pub
@@ -269,6 +274,7 @@ self_update()
 
     # overwrite old andock-ci server
     sudo mv "$ANDOCK_CI_PATH_UPDATED" "$ANDOCK_CI_PATH"
+    acs _update-server
   else
     echo-rewrite "Updating andock-ci... $ANDOCK_CIS_VERSION ${green}[OK]${NC}"
   fi
@@ -311,6 +317,10 @@ case "$1" in
   _install-server)
     shift
     install_server
+  ;;
+  _update-server)
+    shift
+    update_server
   ;;
   _bridge)
     shift
