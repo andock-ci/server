@@ -18,7 +18,7 @@ green='\033[0;32m'
 green_bg='\033[42m'
 yellow='\033[1;33m'
 NC='\033[0m'
-
+CONFIG_DIR="$HOME/.docksal"
 #------------------------------ Help functions --------------------------------
 # Ask dialog with an optional message
 # @param $1 confirmation message
@@ -91,16 +91,6 @@ echo-error () {
 	done
 }
 
-# rewrite previous line
-echo-rewrite ()
-{
-	echo -en "\033[1A"
-	echo -e "\033[0K\r""$1"
-}
-echo-rewrite-ok ()
-{
-	echo-rewrite "$1 ${green}[OK]${NC}"
-}
 
 
 # Like if_failed but with more strict error
@@ -116,11 +106,11 @@ if_failed_error ()
 #------------------------------ HELP --------------------------------
 show_help ()
 {
-    printh "Andock-ci Server command reference" "${ANDOCK_CIS_VERSION}" "green"
+  printh "Andock-ci Server command reference" "${ANDOCK_CIS_VERSION}" "green"
 
 	echo
 	printh "ssh-add" "Add public key to andock-ci user authorized_key file"
-    echo
+  echo
 
 	echo
 	printh "version (v, -v)" "Print andock-ci version. [v, -v] - prints short version"
@@ -135,15 +125,15 @@ install_server()
 {
   echo-green "Installing andock-ci server ..."
 
-  sudo apt update
-  sudo apt install whois -y
-  sudo apt install build-essential libssl-dev libffi-dev python-dev -y
+  #sudo apt update
+  #sudo apt install whois -y
+  #sudo apt install build-essential libssl-dev libffi-dev python-dev -y
 
   set -e
-  wget https://bootstrap.pypa.io/get-pip.py
-  sudo python get-pip.py
-  pip install ansible
-
+  ##wget https://bootstrap.pypa.io/get-pip.py
+  ##sudo python get-pip.py
+  #pip install ansible
+  #rm get-pip.py
   if [ "$1" = "" ]; then
     if [ "${TRAVIS}" = "true" ]; then
       local pw="andock-ci"
@@ -156,21 +146,20 @@ install_server()
     local pw=$1
     shift
   fi
-
-  ansible-playbook --connection=local /dev/stdin <<END
----
+  mkdir -p ~/.andock-ci
+  echo "---
 - hosts: localhost
   connection: local
   any_errors_fatal: True
   gather_facts: false
   tasks:
   - name: Install docksal
-    shell: "curl -fsSL get.docksal.io | sh"
+    shell: \"curl -fsSL get.docksal.io | sh\"
     become: true
     args:
-      creates: "/usr/local/bin/fin"
+      creates: \"/usr/local/bin/fin\"
     environment:
-      DOCKSAL_VHOST_PROXY_IP: "0.0.0.0"
+      DOCKSAL_VHOST_PROXY_IP: \"0.0.0.0\"
 
   - name: Create andock-ci user
     user:
@@ -178,9 +167,9 @@ install_server()
       group: docker
       shell: /bin/bash
       generate_ssh_key: yes
-      groups: "sudo"
+      groups: \"sudo\"
       ssh_key_bits: 4096
-      password: $pw
+      password: \"{{ pw }}\"
     become: true
 
   - name: Allow 'sudo' group to user andock-ci
@@ -192,9 +181,9 @@ install_server()
     become: true
 
   - name: Run fin update
-    shell: "sudo su andock-ci fin update"
+    shell: \"sudo su andock-ci fin update\"
     environment:
-      DOCKSAL_VHOST_PROXY_IP: "0.0.0.0"
+      DOCKSAL_VHOST_PROXY_IP: \"0.0.0.0\"
     become: true
 
   - name: Set DOCKSAL_VHOST_PROXY_IP export to /etc/profile
@@ -203,12 +192,12 @@ install_server()
       regexp: '^export DOCKSAL_VHOST_PROXY_IP'
       line: 'export DOCKSAL_VHOST_PROXY_IP=0.0.0.0'
     become: true
+" > ~/.andock-ci/install.yml
 
+  ansible-playbook --connection=local ~/.andock-ci/install.yml -e="pw=$pw" -vvv
 
-END
-
-echo-green "ANDOCK-CI SERVER WAS INSTALLED SUCCESSFULLY..."
-echo-green "Please copy and paste the following ssh key to your git user. Andock-ci will use it to checkout your target git repository.."
+  echo-green "andock-ci server was installed successfully..."
+  echo-green "Please copy and paste the following ssh key to your git user. Andock-ci will use it to checkout your target git repository.."
   sudo cat /home/andock-ci/.ssh/id_rsa.pub
 }
 
@@ -258,26 +247,25 @@ self_update()
 
   local new_version=$(echo "$new_andock_ci" | grep "^ANDOCK_CI_VERSION=" | cut -f 2 -d "=")
   if [[ "$new_version" != "$ANDOCK_CIS_VERSION" ]]; then
-  local current_major_version=$(echo "$ANDOCK_CIS_VERSION" | cut -d "." -f 1)
-  local new_major_version=$(echo "$new_version" | cut -d "." -f 1)
-  if [[ "$current_major_version" != "$new_major_version" ]]; then
-    echo -e "${red_bg} WARNING ${NC} ${red}Non-backwards compatible version update${NC}"
-    echo -e "Updating from ${yellow}$ANDOCK_CIS_VERSION${NC} to ${yellow}$new_version${NC} is not backward compatible."
-    _confirm "Continue with the update?"
+    local current_major_version=$(echo "$ANDOCK_CIS_VERSION" | cut -d "." -f 1)
+    local new_major_version=$(echo "$new_version" | cut -d "." -f 1)
+    if [[ "$current_major_version" != "$new_major_version" ]]; then
+      echo -e "${red_bg} WARNING ${NC} ${red}Non-backwards compatible version update${NC}"
+      echo -e "Updating from ${yellow}$ANDOCK_CIS_VERSION${NC} to ${yellow}$new_version${NC} is not backward compatible."
+      _confirm "Continue with the update?"
+    fi
+
+    # saving to file
+    echo "$new_andock_ci" | sudo tee "$ANDOCK_CI_PATH_UPDATED" > /dev/null
+    if_failed_error "Could not write $ANDOCK_CI_PATH_UPDATED"
+    sudo chmod +x "$ANDOCK_CI_PATH_UPDATED"
+    echo-green "andock-ci $new_version downloaded..."
+
+    # overwrite old andock-ci server
+    sudo mv "$ANDOCK_CI_PATH_UPDATED" "$ANDOCK_CI_PATH"
+  else
+    echo-rewrite "Updating andock-ci... $ANDOCK_CIS_VERSION ${green}[OK]${NC}"
   fi
-
-# saving to file
-echo "$new_andock_ci" | sudo tee "$ANDOCK_CI_PATH_UPDATED" > /dev/null
-if_failed_error "Could not write $ANDOCK_CI_PATH_UPDATED"
-sudo chmod +x "$ANDOCK_CI_PATH_UPDATED"
-echo-green "andock-ci $new_version downloaded..."
-
-# overwrite old andock-ci server
-sudo mv "$ANDOCK_CI_PATH_UPDATED" "$ANDOCK_CI_PATH"
-exit
-else
-echo-rewrite "Updating andock-ci... $ANDOCK_CIS_VERSION ${green}[OK]${NC}"
-fi
 }
 
 
@@ -301,11 +289,11 @@ _bridge ()
   if [ "$1" = "env" ]; then
     export $2;
   fi
-  if [ "${ANDOCK_CI_ENV}" != "" ]; then
-    local cmd="fin @${LC_ANDOCK_CI_ENV} exec bash -c \"$SSH_ORIGINAL_COMMAND\""
-    eval $cmd
+  if [ "${LC_ANDOCK_CI_ENV}" != "" ]; then
+    local service_name=$(fin @${LC_ANDOCK_CI_ENV} ps | sed -n 's/\(.*\)_cli_1\(.*\)/\1/p')
+    docker exec -i "${service_name}_cli_1" bash -c "$@"
   elif [ "$args" != "" ]; then
-    eval "$SSH_ORIGINAL_COMMAND"
+    eval "$args"
   else
     /bin/bash
   fi
