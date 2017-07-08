@@ -125,15 +125,16 @@ install_server()
 {
   echo-green "Installing andock-ci server ..."
 
-  #sudo apt update
-  #sudo apt install whois -y
-  #sudo apt install build-essential libssl-dev libffi-dev python-dev -y
+  sudo apt update
+  sudo apt install whois -y
+  sudo apt install build-essential libssl-dev libffi-dev python-dev -y
 
   set -e
-  ##wget https://bootstrap.pypa.io/get-pip.py
-  ##sudo python get-pip.py
-  #pip install ansible
-  #rm get-pip.py
+  wget https://bootstrap.pypa.io/get-pip.py
+  sudo python get-pip.py
+  pip install ansible
+  rm get-pip.py
+
   if [ "$1" = "" ]; then
     if [ "${TRAVIS}" = "true" ]; then
       local pw="andock-ci"
