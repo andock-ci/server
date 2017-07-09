@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ANDOCK_CI_VERSION=0.0.8
+ANDOCK_CI_VERSION=0.0.10
 
 REQUIREMENTS_ANDOCK_CI_SERVER='0.0.1'
 
@@ -78,6 +78,13 @@ esac
 
 }
 
+# @author Leonid Makarov
+# rewrite previous line
+echo-rewrite ()
+{
+	echo -en "\033[1A"
+	echo -e "\033[0K\r""$1"
+}
 # @author Leonid Makarov
 echo-red () { echo -e "${red}$1${NC}"; }
 echo-green () { echo -e "${green}$1${NC}"; }
@@ -186,7 +193,7 @@ update_server()
     become: true
 
   - name: Run fin update
-    shell: \"sudo su andock-ci fin update\"
+    shell: \"sudo su andock-ci export DOCKSAL_VHOST_PROXY_IP=0.0.0.0; fin update\"
     environment:
       DOCKSAL_VHOST_PROXY_IP: \"0.0.0.0\"
     become: true

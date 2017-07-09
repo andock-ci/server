@@ -1,5 +1,4 @@
 sudo mkdir -p /usr/local/bin &&
 sudo curl -fsSL https://raw.githubusercontent.com/andock-ci/server/master/bin/acs -o /usr/local/bin/acs &&
 sudo chmod +x /usr/local/bin/acs &&
-export DOCKSAL_VHOST_PROXY_IP="0.0.0.0"
 acs _install-server
