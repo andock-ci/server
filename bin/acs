@@ -122,6 +122,19 @@ show_help ()
 
 update_server()
 {
+  if [ "$1" = "" ]; then
+    if [ "${TRAVIS}" = "true" ]; then
+      local pw="andock-ci"
+    else
+      echo-green "Please enter andock-ci user password..."
+      local pw=$(mkpasswd)
+    fi
+
+  else
+    local pw=$1
+    shift
+  fi
+
   echo "---
 - hosts: localhost
   connection: local
@@ -177,7 +190,7 @@ update_server()
 
 " > ~/.andock-ci/install.yml
 
-  ansible-playbook --connection=local ~/.andock-ci/install.yml -e "pw=$pw"
+  ansible-playbook --connection=local --extra-vars="pw=$pw" ~/.andock-ci/install.yml
 
 }
 # Ansible playbook wrapper to execute andock-ci.fin role
@@ -195,21 +208,8 @@ install_server()
   pip install ansible
   rm get-pip.py
 
-  if [ "$1" = "" ]; then
-    if [ "${TRAVIS}" = "true" ]; then
-      local pw="andock-ci"
-    else
-      echo-green "Please enter andock_ci password..."
-      local pw=$(mkpasswd)
-    fi
-
-  else
-    local pw=$1
-    shift
-  fi
   mkdir -p ~/.andock-ci
-
-  update_server
+  update_server $1
   echo-green "andock-ci server was installed successfully..."
   echo-green "Please copy and paste the following ssh key to your git user. Andock-ci will use it to checkout your target git repository.."
   sudo cat /home/andock-ci/.ssh/id_rsa.pub
