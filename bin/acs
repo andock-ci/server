@@ -168,12 +168,6 @@ update_server()
       line: '%sudo   ALL=(ALL:ALL) ALL'
     become: true
 
-  - name: Run fin update
-    shell: \"sudo su andock-ci fin update\"
-    environment:
-      DOCKSAL_VHOST_PROXY_IP: \"0.0.0.0\"
-    become: true
-
   - name: Add DOCKSAL_VHOST_PROXY_IP export to /etc/profile
     lineinfile:
       path: /etc/profile
@@ -186,6 +180,12 @@ update_server()
       path: /home/andock-ci/.bashrc
       regexp: '^export DOCKSAL_VHOST_PROXY_IP'
       line: 'export DOCKSAL_VHOST_PROXY_IP=0.0.0.0'
+    become: true
+
+  - name: Run fin update
+    shell: \"sudo su andock-ci fin update\"
+    environment:
+      DOCKSAL_VHOST_PROXY_IP: \"0.0.0.0\"
     become: true
 
 " > ~/.andock-ci/install.yml
