@@ -191,7 +191,7 @@ update_server()
     become: true
 
   - name: Run fin update
-    shell: \"sudo su andock-ci export DOCKSAL_VHOST_PROXY_IP=0.0.0.0;sudo su andock-ci fin update\"
+    shell: \"sudo su andock-ci export DOCKSAL_VHOST_PROXY_IP=0.0.0.0;sudo su andock-ci fin update; fin update\"
     environment:
       DOCKSAL_VHOST_PROXY_IP: \"0.0.0.0\"
     become: true
