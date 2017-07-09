@@ -1,8 +1,6 @@
 #!/bin/bash
 
-ANDOCK_CI_VERSION=0.0.10
-
-REQUIREMENTS_ANDOCK_CI_SERVER='0.0.1'
+ANDOCK_CI_VERSION=0.0.11
 
 ANDOCK_CI_PATH="/usr/local/bin/acs"
 ANDOCK_CI_PATH_UPDATED="/usr/local/bin/acs.updated"
