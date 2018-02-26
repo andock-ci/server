@@ -219,9 +219,10 @@ install_server()
     wget https://bootstrap.pypa.io/get-pip.py
     sudo python get-pip.py
     sudo pip install ansible
+    rm get-pip.py
   fi
 
-  rm get-pip.py
+
 
   mkdir -p ~/.andock-ci
   update_server $1
