@@ -211,14 +211,10 @@ install_server()
   sudo apt-get install build-essential libssl-dev libffi-dev python-dev -y
 
   set -e
+
   wget https://bootstrap.pypa.io/get-pip.py
   sudo python get-pip.py
-    # pip with sudo is not working in travis.
-  if [ "${TRAVIS}" = "true" ]; then
-    pip install ansible
-  else
-    sudo pip install ansible
-  fi
+  sudo pip install ansible
 
   rm get-pip.py
 
