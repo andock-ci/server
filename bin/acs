@@ -213,7 +213,13 @@ install_server()
   set -e
   wget https://bootstrap.pypa.io/get-pip.py
   sudo python get-pip.py
-  pip install ansible
+    # pip with sudo is not working in travis.
+  if [ "${TRAVIS}" = "true" ]; then
+    pip install ansible
+  else
+    sudo pip install ansible
+  fi
+
   rm get-pip.py
 
   mkdir -p ~/.andock-ci
