@@ -212,7 +212,7 @@ install_server()
 
   set -e
 
-    # pip with sudo is not working in travis.
+  # Don't install own pip inside travis.
   if [ "${TRAVIS}" = "true" ]; then
     sudo pip install ansible
   else
@@ -340,7 +340,7 @@ _bridge ()
 case "$1" in
   _install-server)
     shift
-    install_server
+    install_server "$1"
   ;;
   _update-server)
     shift
