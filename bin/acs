@@ -149,6 +149,10 @@ update_server()
   any_errors_fatal: True
   gather_facts: false
   tasks:
+  - name: Install requirements
+    package:
+      name: sudo git
+      state: latest
   - name: Install docksal
     shell: \"curl -fsSL get.docksal.io | sh\"
     become: true
@@ -340,7 +344,7 @@ _bridge ()
 case "$1" in
   _install-server)
     shift
-    install_server "$1"
+    install_server
   ;;
   _update-server)
     shift

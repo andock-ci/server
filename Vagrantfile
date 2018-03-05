@@ -64,13 +64,8 @@ Vagrant.configure("2") do |config|
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
-    apt-get update
-    apt-get install -y curl sudo
-    sudo mkdir -p /usr/local/bin &&
-    sudo curl -fsSL https://raw.githubusercontent.com/andock-ci/server/master/bin/acs -o /usr/local/bin/acs &&
-    sudo chmod +x /usr/local/bin/acs &&
-    acs _install-server "andock-ci"
-
+    curl -fsSL https://raw.githubusercontent.com/andock-ci/server/master/install-server | sh
+    acs ssh-add "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDNNJE637eb7ZIUP02i9B+feyBTHmhmDbCjXB5iPUBcVDu/BO1YdTWXeaAdjg4dAy7Kq5YKG+BeAcxoNe67WcNiyvvhZaaIwd4tFmTl6BA1QfpSub+fb67LQz33xm0b2+gZcv5iTsU6E0KK+fZHwCXEAd7Ac27bv7nWnJB7aRSjXvFwetb/afpa5qMjteEN2oIomSgrT1GXaleKNhW0R58z1DigtQLACwRPbmSLGWeZ2+Li9wbIZgIHpNqj51qA6W7kQM2FivjVnbsFhBi3hUvYQabrB4NWZwoLbQ/shEogJsUIKFp/JDm1Sov8EVW0D8l5rZToGPAv/j27osRiR9wKZbnthmxLRuRaot9v7gSIZwONEpjhTj/McV3arLNBsEbR27ERg9LYJE3h9YdVeVb3W0wwllU8SryFjMypaPSsEq1JFVFQUNEyD9Wx9WbencR/uUXMDTIp1KeSGU+r/ElRsi/8H6N0XEt5+StULdfOb8l9OCOdVVq5fqQUVTNvtjGSGqTVRLVm9wGFfZ0tfwVXy+TFYtXcB6oLv4Y0Dr201aXkj3Mq3UQf3qCkZLcK0jFIoGy1M9EKbTfI+lEv5m4eoWRXI1oPzftKotaiMqWOHvPMgbvpMQMDcxq/ETUJyLO+uMOsm5BHIcZnDg4WDOp9FgRMAsBAdV3Zc3ZAyRj3bw== cw@cw"
   SHELL
 
 end
