@@ -1,0 +1,6 @@
+---
+# defaults file for drupal-git-deployment
+
+
+pw: "andock-ci"
+ssh_key: ""

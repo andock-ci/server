@@ -1,4 +1,0 @@
-sudo mkdir -p /usr/local/bin &&
-sudo curl -fsSL https://raw.githubusercontent.com/andock-ci/server/master/bin/acs -o /usr/local/bin/acs &&
-sudo chmod +x /usr/local/bin/acs &&
-acs _install-server

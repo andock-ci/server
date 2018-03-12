@@ -149,6 +149,10 @@ update_server()
   any_errors_fatal: True
   gather_facts: false
   tasks:
+  - name: Install requirements
+    package:
+      name: sudo git
+      state: latest
   - name: Install docksal
     shell: \"curl -fsSL get.docksal.io | sh\"
     become: true
@@ -212,7 +216,7 @@ install_server()
 
   set -e
 
-    # pip with sudo is not working in travis.
+  # Don't install own pip inside travis.
   if [ "${TRAVIS}" = "true" ]; then
     sudo pip install ansible
   else
