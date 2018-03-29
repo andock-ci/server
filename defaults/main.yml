@@ -4,3 +4,5 @@
 
 pw: "andock-ci"
 ssh_key: ""
+
+home: "/home/andock-ci"
