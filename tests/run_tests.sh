@@ -3,3 +3,4 @@
 ssh-keygen -R "192.168.33.10"
 cd ..
 ansible-playbook -i tests/inventory-$1 tests/test_instance.yml --tags install
+ansible-playbook -i tests/inventory-$1 tests/test_instance.yml --tags update
