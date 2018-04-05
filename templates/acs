@@ -1,12 +1,6 @@
 #!/bin/bash
 
-ANDOCK_CI_VERSION=0.0.12
-
-ANDOCK_CI_PATH="/usr/local/bin/acs"
-ANDOCK_CI_PATH_UPDATED="/usr/local/bin/acs.updated"
-
-URL_REPO="https://raw.githubusercontent.com/andock-ci/server"
-URL_ANDOCK_CI="${URL_REPO}/master/bin/acs"
+ANDOCK_CI_VERSION=0.1.0
 
 # @author Leonid Makarov
 # Console colors
@@ -128,187 +122,6 @@ show_help ()
 
 #------------------------------ SETUP --------------------------------
 
-update_server()
-{
-  if [ "$1" = "" ]; then
-    if [ "${TRAVIS}" = "true" ]; then
-      local pw="andock-ci"
-    else
-      echo-green "Please enter andock-ci user password..."
-      local pw=$(mkpasswd)
-    fi
-
-  else
-    local pw=$1
-    shift
-  fi
-
-  echo "---
-- hosts: localhost
-  connection: local
-  any_errors_fatal: True
-  gather_facts: false
-  tasks:
-  - name: Install requirements
-    package:
-      name: sudo git
-      state: latest
-  - name: Install docksal
-    shell: \"curl -fsSL get.docksal.io | sh\"
-    become: true
-    args:
-      creates: \"/usr/local/bin/fin\"
-    environment:
-      DOCKSAL_VHOST_PROXY_IP: \"0.0.0.0\"
-
-  - name: Create andock-ci user
-    user:
-      name: andock-ci
-      group: docker
-      shell: /bin/bash
-      generate_ssh_key: yes
-      groups: \"sudo\"
-      ssh_key_bits: 4096
-      password: \"{{ pw }}\"
-    become: true
-
-  - name: Allow 'sudo' group to user andock-ci
-    lineinfile:
-      dest: /etc/sudoers
-      state: present
-      regexp: '^%sudo'
-      line: '%sudo   ALL=(ALL:ALL) ALL'
-    become: true
-
-  - name: Add DOCKSAL_VHOST_PROXY_IP export to /etc/profile
-    lineinfile:
-      path: /etc/profile
-      regexp: '^export DOCKSAL_VHOST_PROXY_IP'
-      line: 'export DOCKSAL_VHOST_PROXY_IP=0.0.0.0'
-    become: true
-
-  - name: Add DOCKSAL_VHOST_PROXY_IP export to /home/andock-ci/.bashrc
-    lineinfile:
-      path: /home/andock-ci/.bashrc
-      regexp: '^export DOCKSAL_VHOST_PROXY_IP'
-      line: 'export DOCKSAL_VHOST_PROXY_IP=0.0.0.0'
-    become: true
-
-  - name: Run fin update
-    shell: \"sudo su andock-ci export DOCKSAL_VHOST_PROXY_IP=0.0.0.0;sudo su andock-ci fin update; fin update\"
-    environment:
-      DOCKSAL_VHOST_PROXY_IP: \"0.0.0.0\"
-    become: true
-
-" > ~/.andock-ci/install.yml
-
-  ansible-playbook --connection=local --extra-vars="pw=$pw" ~/.andock-ci/install.yml
-
-}
-# Ansible playbook wrapper to execute andock-ci.fin role
-install_server()
-{
-  echo-green "Installing andock-ci server ..."
-
-  sudo apt-get update
-  sudo apt-get install whois -y
-  sudo apt-get install build-essential libssl-dev libffi-dev python-dev -y
-
-  set -e
-
-  # Don't install own pip inside travis.
-  if [ "${TRAVIS}" = "true" ]; then
-    sudo pip install ansible
-  else
-    wget https://bootstrap.pypa.io/get-pip.py
-    sudo python get-pip.py
-    sudo pip install ansible
-    rm get-pip.py
-  fi
-
-
-
-  mkdir -p ~/.andock-ci
-  update_server $1
-  echo-green "andock-ci server was installed successfully..."
-  echo-green "Please copy and paste the following ssh key to your git user. Andock-ci will use it to checkout your target git repository.."
-  sudo cat /home/andock-ci/.ssh/id_rsa.pub
-}
-
-# Ansible playbook wrapper to add ssh key
-ssh_add()
-{
-  if [ "$1" = "" ]; then
-    local key=$(_ask "Please enter your ssh public key.")
-  else
-    local key=$1
-    shift
-  fi
-
-  sudo echo "Installing key.. $key"
-
-  ansible-playbook --extra-vars="ssh_key='$key'" /dev/stdin <<END
----
-- hosts: localhost
-  connection: local
-  any_errors_fatal: True
-  gather_facts: false
-
-  tasks:
-  - block:
-    - name: Create .ssh folder
-      file:
-        path: /home/andock-ci/.ssh
-        state: directory
-        owner: andock-ci
-        group: docker
-      become: true
-
-
-    - name: Set authorized key defining key options
-      authorized_key:
-        user: andock-ci
-        state: present
-        key: "command=\"acs _bridge \$SSH_ORIGINAL_COMMAND\" {{ ssh_key }}"
-      become: true
-
-END
-
-}
-# Based on docksal update script
-# @author Leonid Makarov
-self_update()
-{
-  echo-green "Updating andock_ci server ..."
-  local new_andock_ci
-  new_andock_ci=$(curl -kfsSL "$URL_ANDOCK_CI?r=$RANDOM")
-  if_failed_error "andock_ci download failed."
-
-  local new_version=$(echo "$new_andock_ci" | grep "^ANDOCK_CI_VERSION=" | cut -f 2 -d "=")
-  if [[ "$new_version" != "$ANDOCK_CI_VERSION" ]]; then
-    local current_major_version=$(echo "$ANDOCK_CI_VERSION" | cut -d "." -f 1)
-    local new_major_version=$(echo "$new_version" | cut -d "." -f 1)
-    if [[ "$current_major_version" != "$new_major_version" ]]; then
-      echo -e "${red_bg} WARNING ${NC} ${red}Non-backwards compatible version update${NC}"
-      echo -e "Updating from ${yellow}$ANDOCK_CI_VERSION${NC} to ${yellow}$new_version${NC} is not backward compatible."
-      _confirm "Continue with the update?"
-    fi
-
-    # saving to file
-    echo "$new_andock_ci" | sudo tee "$ANDOCK_CI_PATH_UPDATED" > /dev/null
-    if_failed_error "Could not write $ANDOCK_CI_PATH_UPDATED"
-    sudo chmod +x "$ANDOCK_CI_PATH_UPDATED"
-    echo-green "andock-ci $new_version downloaded..."
-
-    # overwrite old andock-ci server
-    sudo mv "$ANDOCK_CI_PATH_UPDATED" "$ANDOCK_CI_PATH"
-    acs _update-server
-  else
-    echo-rewrite "Updating andock-ci... $ANDOCK_CI_VERSION ${green}[OK]${NC}"
-  fi
-}
-
-
 # Display fin version
 # @option --short - Display only the version number
 version ()
@@ -331,7 +144,8 @@ _bridge ()
   fi
   if [ "${LC_ANDOCK_CI_ENV}" != "" ]; then
     local service_name=$(fin @${LC_ANDOCK_CI_ENV} ps | sed -n 's/\(.*\)_cli_1\(.*\)/\1/p')
-    docker exec -i "${service_name}_cli_1" bash -c "$@"
+    test -t 1 && USE_TTY="-t"
+    docker exec  -i $USE_TTY "${service_name}_cli_1"  bash -c "$*"
   elif [ "$args" != "" ]; then
     eval "$args"
   else
@@ -342,33 +156,11 @@ _bridge ()
 #----------------------------------- MAIN -------------------------------------
 
 case "$1" in
-  _install-server)
-    shift
-    install_server
-  ;;
-  _update-server)
-    shift
-    update_server
-  ;;
   _bridge)
     shift
     _bridge "$@"
   ;;
 
-  self-update)
-    shift
-    shift
-    self_update "$@"
-  ;;
-
-  ssh-add)
-    shift
-    ssh_add "$@"
-  ;;
-  help|"")
-	shift
-    show_help
-  ;;
   -v | v)
     version --short
   ;;
