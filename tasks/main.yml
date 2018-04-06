@@ -1,25 +1,25 @@
-  - name: Install "sudo"
+  - name: Install sudo.
     package:
       name: sudo
       state: latest
     become: true
     tags: ['install']
 
-  - name: Install "git"
+  - name: Install git.
     package:
       name: git
       state: latest
     become: true
     tags: ['install']
 
-  - name: Create docker group
+  - name: Create docker group.
     group:
       name: docker
       state: present
     become: true
     tags: ['install']
 
-  - name: Create andock-ci user
+  - name: Create andock-ci user.
     user:
       name: andock-ci
       group: docker
@@ -31,7 +31,7 @@
     become: true
     tags: ['install']
 
-  - name: Allow 'sudo' group to user andock-ci
+  - name: Allow 'sudo' group to user andock-ci.
     lineinfile:
       dest: /etc/sudoers
       state: present
@@ -40,7 +40,7 @@
     become: true
     tags: ['install']
 
-  - name: Add DOCKSAL_VHOST_PROXY_IP export to /etc/profile
+  - name: Add DOCKSAL_VHOST_PROXY_IP export to /etc/profile.
     lineinfile:
       path: /etc/profile
       regexp: '^export DOCKSAL_VHOST_PROXY_IP'
@@ -55,7 +55,7 @@
       line: 'export DOCKSAL_VHOST_PROXY_IP=0.0.0.0'
     become: true
 
-  - name: Install docksal
+  - name: Install docksal.
     shell: "curl -fsSL get.docksal.io | sh"
     become_user: andock-ci
     become_method: su
@@ -66,7 +66,7 @@
       HOME: "{{ HOME }}"
     tags: ['install']
 
-  - name: Update docksal
+  - name: Update docksal.
     shell: "fin update"
     become_user: andock-ci
     become_method: su
@@ -92,7 +92,7 @@
     become: true
     tags: ['install', 'update']
 
-  - name: Please copy and paste the following SSH key to your git user. Andock-ci will use it to checkout your target git repository..
+  - name: Please copy and paste the following SSH key to your git user. Andock-ci will use it to checkout your target git repository.
     shell: "cat {{ HOME }}/.ssh/id_rsa.pub"
     register: ssh_key
     become: true
